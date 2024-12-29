@@ -12,7 +12,7 @@ character_x = width // 2
 character_y = height // 2
 
 # Movement step size
-step = 1
+step = 0.5
 
 # Mouse position
 mouse_x = width // 2
