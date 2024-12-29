@@ -4,15 +4,15 @@ from OpenGL.GLU import *
 import math
 
 # Window dimensions
-width = 800
-height = 600
+width = 1920
+height = 1080
 
 # Character position
 character_x = width // 2
 character_y = height // 2
 
 # Movement step size
-step = 0.25
+step = 1
 
 # Mouse position
 mouse_x = width // 2
