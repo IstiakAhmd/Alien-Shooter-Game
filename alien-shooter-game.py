@@ -13,7 +13,7 @@ character_y = height // 2
 
 # Movement step size
 step = 1
-
+print("kire")
 # Mouse position
 mouse_x = width // 2
 mouse_y = height // 2
