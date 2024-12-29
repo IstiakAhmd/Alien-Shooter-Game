@@ -4,8 +4,8 @@ from OpenGL.GLU import *
 import math
 
 # Window dimensions
-width = 1920
-height = 1080
+width = 800
+height = 600
 
 # Character position
 character_x = width // 2
