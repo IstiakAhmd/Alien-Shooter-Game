@@ -112,3 +112,5 @@ glutKeyboardUpFunc(key_up)  # Set key release callback
 glutPassiveMotionFunc(mouse_motion)  # Track mouse movement
 
 glutMainLoop()
+
+print("Hello world")
