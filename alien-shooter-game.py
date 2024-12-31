@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
-
+import random
 # Window dimensions
 width = 800
 height = 600
@@ -12,7 +12,7 @@ character_x = width // 2
 character_y = height // 2
 
 # Movement step size
-step = 1
+step = .20
 
 # Mouse position
 mouse_x = width // 2
@@ -20,7 +20,59 @@ mouse_y = height // 2
 
 # Key state dictionary
 keys = {b'w': False, b'a': False, b's': False, b'd': False}
+# List to store aliens
+aliens = []
 
+# Alien appearance interval (frames)
+alien_spawn_interval = 120  # Adjust for difficulty
+frame_count = 0
+
+class Alien:
+    """Class to represent an alien entity."""
+    def __init__(self, x, y, speed):
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.is_dodged = False  # Flag to check if the alien is dodged
+
+    def move(self):
+        """Move the alien."""
+        if not self.is_dodged:
+            # Move towards the character
+            angle = math.atan2(character_y - self.y, character_x - self.x)
+            self.x += self.speed * math.cos(angle)
+            self.y += self.speed * math.sin(angle)
+        else:
+            # Move straight downward when dodged
+            self.y -= self.speed
+
+    def draw(self):
+        """Draw the alien as a red square."""
+        glColor3f(1.0, 0.0, 0.0)  # Red color for aliens
+        glBegin(GL_QUADS)
+        glVertex2f(self.x - 10, self.y - 10)
+        glVertex2f(self.x + 10, self.y - 10)
+        glVertex2f(self.x + 10, self.y + 10)
+        glVertex2f(self.x - 10, self.y + 10)
+        glEnd()
+def update_aliens():
+    """Update positions of all aliens and remove those that are dodged or off-screen."""
+    global aliens
+    dodge_distance = 50  # Distance threshold for dodging
+
+    updated_aliens = []
+    for alien in aliens:
+        # Check if the alien is close enough to be dodged
+        if abs(alien.x - character_x) < dodge_distance and abs(alien.y - character_y) < dodge_distance:
+            # Alien is dodged, do not add it to the updated list
+            continue
+        alien.move()
+        # Keep aliens that are still within the screen
+        if 0 <= alien.x <= width and 0 <= alien.y <= height:
+            updated_aliens.append(alien)
+
+    # Update the list of aliens
+    aliens = updated_aliens
 def draw_character():
     """Draw the character as a rotated triangle."""
     glColor3f(0.0, 1.0, 0.0)  # Green color for the character
@@ -59,9 +111,18 @@ def update_character_position():
 def calculate_angle(x1, y1, x2, y2):
     """Calculate the angle (in degrees) between two points."""
     return math.degrees(math.atan2(y2 - y1, x2 - x1))
+def spawn_alien():
+    """Spawn a new alien at a random edge position."""
+    edge = "top"
+    if edge == "top":
+        x = random.randint(0, width)
+        y = height 
+    speed = 0.05
+    aliens.append(Alien(x, y, speed))
+
 
 def showScreen():
-    global character_x, character_y, mouse_x, mouse_y
+    global character_x, character_y, mouse_x, mouse_y,frame_count
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -69,6 +130,14 @@ def showScreen():
 
     # Update the character's position
     update_character_position()
+    # Spawn aliens periodically
+    frame_count += 1
+    if frame_count >= alien_spawn_interval:
+        spawn_alien()
+        frame_count = 0
+
+    # Update alien positions
+    update_aliens()
 
     # Calculate the rotation angle
     angle = calculate_angle(character_x, character_y, mouse_x, mouse_y)
@@ -79,7 +148,9 @@ def showScreen():
     glRotatef(angle - 90, 0, 0, 1)  # Rotate to face the cursor (subtract 90 to align with triangle tip)
     draw_character()
     glPopMatrix()
-
+    # Draw all aliens
+    for alien in aliens:
+        alien.draw()
     glutSwapBuffers()
 
 def key_down(key, x, y):
