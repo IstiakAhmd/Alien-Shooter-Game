@@ -11,6 +11,7 @@ STEP = 0.5
 ALIEN_SPAWN_INTERVAL = 120
 BULLET_SPEED = 2
 PLAYER_HEALTH = 3
+SCORE = 0
 
 # Globals
 character_x = WIDTH // 2
@@ -335,8 +336,8 @@ class BossAlien:
 
 
 def spawn_boss():
-    global boss_alien, boss_spawned
-    if not boss_spawned and len(aliens) >= 10:  # Adjust condition as needed
+    global boss_alien, boss_spawned, SCORE
+    if not boss_spawned and SCORE >= 50:  # Adjust condition as needed
         boss_alien = BossAlien(WIDTH // 2, HEIGHT - 100)  # Spawn boss at the top center
         boss_spawned = True
 
@@ -511,13 +512,14 @@ def spawn_alien(character_x, character_y, screen_width, screen_height):
 
 
 def check_collisions():
-    global bullets, aliens
+    global bullets, aliens, SCORE
     updated_bullets = []
     for bullet in bullets:
         hit = False
         for alien in aliens:
             if alien.is_hit(bullet):
                 alien.health -= 1
+                SCORE += 2
                 hit = True
                 break
         if not hit:
