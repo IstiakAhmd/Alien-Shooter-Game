@@ -22,6 +22,8 @@ keys = {b'w': False, b'a': False, b's': False, b'd': False}
 aliens = []
 bullets = []
 frame_count = 0
+boss_alien = None
+boss_spawned = False
 
 
 # Classes
@@ -42,25 +44,47 @@ class Bullet:
         glBegin(GL_POINTS)
         glVertex2f(self.x, self.y)
         glEnd()
-
+import math
+import random
 
 class Alien:
-    def __init__(self, x, y, speed, health=3):
-        self.x = x
-        self.y = y
+    def __init__(self, screen_width, screen_height, speed, health=3):
+        # Determine spawn side: 0 = top, 1 = bottom, 2 = left, 3 = right
+        self.spawn_side = random.choice([0, 1, 2, 3])
         self.speed = speed
-        self.is_dodged = False
         self.health = health
+        self.is_dodged = False
+
+        # Initialize position based on the spawn side
+        if self.spawn_side == 0:  # Top
+            self.x = random.uniform(0, screen_width)
+            self.y = screen_height
+        elif self.spawn_side == 1:  # Bottom
+            self.x = random.uniform(0, screen_width)
+            self.y = 0
+        elif self.spawn_side == 2:  # Left
+            self.x = 0
+            self.y = random.uniform(0, screen_height)
+        elif self.spawn_side == 3:  # Right
+            self.x = screen_width
+            self.y = random.uniform(0, screen_height)
+
+        # Target a random point near the center or other areas
+        self.target_x = random.uniform(screen_width * 0.3, screen_width * 0.7)
+        self.target_y = random.uniform(screen_height * 0.3, screen_height * 0.7)
 
     def move(self):
         if not self.is_dodged:
-            angle = math.atan2(character_y - self.y, character_x - self.x)
+            # Move towards the target point
+            angle = math.atan2(self.target_y - self.y, self.target_x - self.x)
             self.x += self.speed * math.cos(angle)
             self.y += self.speed * math.sin(angle)
         else:
+            # Move upward if dodged (or implement your own logic)
             self.y -= self.speed
 
     def is_hit(self, bullet):
+        # Check if the alien is hit by a bullet
         distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
         return distance < 10
 
@@ -102,7 +126,154 @@ class Alien:
         for i in range(8):
             glVertex2f(self.x + 13, self.y - 5 - i)
         glEnd()
+#Boss alien
+class BossAlien:
+    def __init__(self, x, y, size=50, health=20):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.health = health
+        self.projectiles = []  # List to store boss projectiles
+        self.movement_counter = 0
+        self.movement_direction = 1  # Determines whether the boss moves left or right
 
+    def move(self, screen_width):
+        # Boss moves left and right periodically
+        self.movement_counter += 1
+        if self.movement_counter >= 60:  # Change direction every 60 frames
+            self.movement_direction *= -1
+            self.movement_counter = 0
+        self.x += self.movement_direction * 2  # Adjust speed as needed
+        self.x = max(self.size, min(screen_width - self.size, self.x))  # Keep boss within screen bounds
+
+    def shoot(self):
+        # Boss shoots a projectile downward
+        self.projectiles.append({'x': self.x, 'y': self.y - self.size, 'speed': -5})
+
+    def update_projectiles(self):
+        # Update the position of projectiles and remove those off-screen
+        for projectile in self.projectiles[:]:
+            projectile['y'] += projectile['speed']
+            if projectile['y'] < 0:
+                self.projectiles.remove(projectile)
+
+    def draw(self):
+        # Body: Donut Shape (Yellow)
+        glColor3f(1.0, 1.0, 0.0)  # Yellow for the outer circle
+        glBegin(GL_POLYGON)
+        for angle in range(360):
+            theta = math.radians(angle)
+            dx = self.size * math.cos(theta)
+            dy = self.size * math.sin(theta)
+            glVertex2f(self.x + dx, self.y + dy)
+        glEnd()
+
+        # Hole: Inner Circle (Background color to carve out the hole)
+        glColor3f(0.0, 0.0, 0.0)  # Black (or replace with the background color)
+        glBegin(GL_POLYGON)
+        for angle in range(360):
+            theta = math.radians(angle)
+            dx = self.size * 0.5 * math.cos(theta)  # Inner radius for the hole
+            dy = self.size * 0.5 * math.sin(theta)
+            glVertex2f(self.x + dx, self.y + dy)
+        glEnd()
+
+        # Eyes: Positioned like umbrella handle holders outside the hole
+        glColor3f(1.0, 0.0, 0.0)  # Bright Red
+        # Left Eye
+        glBegin(GL_POLYGON)
+        for angle in range(360):
+            theta = math.radians(angle)
+            dx = self.size * 0.1 * math.cos(theta)
+            dy = self.size * 0.1 * math.sin(theta)
+            glVertex2f(
+                self.x - self.size * 0.6 + dx,  # Position left of the body
+                self.y + self.size * 0.7 + dy  # Above the outer edge
+            )
+        glEnd()
+
+        # Right Eye
+        glBegin(GL_POLYGON)
+        for angle in range(360):
+            theta = math.radians(angle)
+            dx = self.size * 0.1 * math.cos(theta)
+            dy = self.size * 0.1 * math.sin(theta)
+            glVertex2f(
+                self.x + self.size * 0.6 + dx,  # Position right of the body
+                self.y + self.size * 0.7 + dy  # Above the outer edge
+            )
+        glEnd()
+
+        # Health Bar
+        glColor3f(0.0, 1.0, 0.0)  # Green for health
+        glBegin(GL_QUADS)
+        glVertex2f(self.x - self.size, self.y + self.size + 10)
+        glVertex2f(self.x - self.size, self.y + self.size + 15)
+        glVertex2f(self.x - self.size + 2 * self.size * (self.health / 20), self.y + self.size + 15)
+        glVertex2f(self.x - self.size + 2 * self.size * (self.health / 20), self.y + self.size + 10)
+        glEnd()
+
+        # Draw projectiles
+        for projectile in self.projectiles:
+            glColor3f(1.0, 1.0, 0.0)  # Yellow
+            glBegin(GL_QUADS)
+            glVertex2f(projectile['x'] - 5, projectile['y'])
+            glVertex2f(projectile['x'] + 5, projectile['y'])
+            glVertex2f(projectile['x'] + 5, projectile['y'] + 10)
+            glVertex2f(projectile['x'] - 5, projectile['y'] + 10)
+            glEnd()
+
+
+    def is_hit(self, bullet):
+            """
+            Check if the boss is hit by a bullet.
+            
+            The boss has a circular hitbox for its body. 
+            For more precise collision detection, adjust for arms or spikes if needed.
+            """
+            # Distance from bullet to boss center
+            distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
+            
+            # Check if the bullet hits the main body (donut shape)
+            if distance < self.size:
+                return True
+            
+            # Optional: Check collision with arms or spikes
+            # Left spike
+            spike_left_x = self.x - self.size * 1.35  # Center of left spike
+            spike_left_y = self.y
+            distance_to_left_spike = math.sqrt((spike_left_x - bullet.x) ** 2 + (spike_left_y - bullet.y) ** 2)
+            
+            # Right spike
+            spike_right_x = self.x + self.size * 1.35  # Center of right spike
+            spike_right_y = self.y
+            distance_to_right_spike = math.sqrt((spike_right_x - bullet.x) ** 2 + (spike_right_y - bullet.y) ** 2)
+            
+            # Hit detection for spikes
+            if distance_to_left_spike < self.size * 0.3 or distance_to_right_spike < self.size * 0.3:
+                return True
+
+            return False
+
+
+def spawn_boss():
+    global boss_alien, boss_spawned
+    if not boss_spawned and len(aliens) >= 10:  # Adjust condition as needed
+        boss_alien = BossAlien(WIDTH // 2, HEIGHT - 100)  # Spawn boss at the top center
+        boss_spawned = True
+
+
+def check_boss_collision(bullets):
+    global boss_spawned, boss_alien
+    if boss_spawned:
+        for bullet in bullets[:]:  # Iterate over a copy to avoid modification issues
+            if boss_alien.is_hit(bullet):
+                print("Boss hit!")
+                boss_alien.health -= 1
+                bullets.remove(bullet)  # Remove bullet after collision
+                if boss_alien.health <= 0:
+                    print("Boss defeated!")
+                    boss_spawned = False  # Remove boss after it's defeated
 
 # Helper Functions
 def spawn_bullets():
@@ -296,8 +467,27 @@ def show_screen():
     draw_bullets()
     for alien in aliens:
         alien.draw()
-    glutSwapBuffers()
+    global running
+    # Call spawn_boss to check if conditions are met
+    spawn_boss()
+    
+    # Draw aliens
+    for alien in aliens:
+        alien.move()
+        alien.draw()
+        global running
+    # Move and draw bullets
+    for bullet in bullets:
+        bullet.move()
+        bullet.draw()
 
+    # Check collision between boss and bullets
+    check_boss_collision(bullets)
+    # Draw the boss if spawned
+    if boss_spawned:
+
+        boss_alien.draw()
+    glutSwapBuffers()
 
 def key_down(key, x, y):
     if key in keys:
