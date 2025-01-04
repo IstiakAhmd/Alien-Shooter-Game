@@ -27,6 +27,67 @@ aliens = []
 # Alien appearance interval (frames)
 alien_spawn_interval = 120  # Adjust for difficulty
 frame_count = 0
+# List to store bullets
+bullets = []
+class Bullet:
+    """Class to represent a bullet fired from the character's guns."""
+    def __init__(self, x, y, angle):
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.speed = 2  # Speed of the bullet
+
+    def move(self):
+        """Move the bullet in the direction of its angle."""
+        self.x += self.speed * math.cos(self.angle)
+        self.y += self.speed * math.sin(self.angle)
+
+    def draw(self):
+        """Draw the bullet."""
+        glColor3f(1.0, 0.0, 0.0)  # Red color for the bullet
+        glPointSize(5)  # Bullet size
+        glBegin(GL_POINTS)
+        glVertex2f(self.x, self.y)
+        glEnd()
+
+def spawn_bullets():
+    """Spawn bullets from both guns towards the mouse click position."""
+    global mouse_x, mouse_y, character_x, character_y
+
+    # Calculate the angle to the target
+    angle = math.atan2(mouse_y - character_y, mouse_x - character_x)
+
+    # Spawn two bullets, one from each gun
+    arm_length = 10  # Length of the arm
+    left_gun_x = character_x - 8 + arm_length * math.cos(angle)
+    left_gun_y = character_y + 10 + arm_length * math.sin(angle)
+    right_gun_x = character_x + 8 + arm_length * math.cos(angle)
+    right_gun_y = character_y + 10 + arm_length * math.sin(angle)
+
+    bullets.append(Bullet(left_gun_x, left_gun_y, angle))
+    bullets.append(Bullet(right_gun_x, right_gun_y, angle))
+
+def update_bullets():
+    """Update the positions of bullets and remove those that go off-screen."""
+    global bullets
+    updated_bullets = []
+    for bullet in bullets:
+        bullet.move()
+        # Keep bullets that are still on the screen
+        if 0 <= bullet.x <= width and 0 <= bullet.y <= height:
+            updated_bullets.append(bullet)
+    bullets = updated_bullets
+
+def draw_bullets():
+    """Draw all bullets."""
+    for bullet in bullets:
+        bullet.draw()
+
+def mouse_click(button, state, x, y):
+    """Handle mouse click to fire bullets."""
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        spawn_bullets()
+
 
 class Alien:
     """Class to represent an alien entity."""
@@ -122,101 +183,86 @@ def update_aliens():
     aliens = updated_aliens
 
 def draw_character():
-    """Draws a cute little monster wearing a cap and holding a big gun."""
-    # Body
-    glColor3f(0.5, 0.8, 1.0)  # Light blue color for the body
-    glPointSize(2)
-    glBegin(GL_POINTS)
+    """Draws the hero with a polished design, featuring guns, arms, legs, and no cape."""
+    global mouse_x, mouse_y, character_x, character_y
+
+    # Calculate the angle between the character and the mouse
+    angle = math.atan2(mouse_y - character_y, mouse_x - character_x)
+
+    # Head (filled circle)
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color
+    glBegin(GL_POLYGON)
     for i in range(360):
         theta = math.radians(i)
-        dx = 12 * math.cos(theta)  # Radius of the circle
-        dy = 14 * math.sin(theta)  # Slightly elongated vertically
-        glVertex2f(dx, dy)
+        dx = 5 * math.cos(theta)  # Radius for the head
+        dy = 5 * math.sin(theta)
+        glVertex2f(dx, 15 + dy)  # Positioned above the body
     glEnd()
 
-    # Cap
-    glColor3f(1.0, 0.0, 0.0)  # Red color for the cap
-    glPointSize(2)
-    glBegin(GL_POINTS)
-    for i in range(180):  # Semi-circle for the cap
-        theta = math.radians(i)
-        dx = 12 * math.cos(theta)
-        dy = 8 * math.sin(theta) + 14  # Positioned slightly above the body
-        glVertex2f(dx, dy)
+    # Body (filled rectangle)
+    glColor3f(0.0, 0.0, 1.0)  # Blue color for the body
+    glBegin(GL_POLYGON)
+    glVertex2f(-8, -10)
+    glVertex2f(8, -10)
+    glVertex2f(8, 10)
+    glVertex2f(-8, 10)
     glEnd()
 
-    # Cap Visor
-    glColor3f(0.6, 0.0, 0.0)  # Darker red for the visor
-    glBegin(GL_POINTS)
-    for x in range(-6, 7):  # Width of the visor
-        for y in range(0, 3):  # Height of the visor
-            glVertex2f(x, 14 + y)
-    glEnd()
-
-    # Eyes (big, round eyes)
-    glColor3f(1.0, 1.0, 1.0)  # White color for the eyes
-    glPointSize(5)
-    glBegin(GL_POINTS)
-    glVertex2f(-5, 5)  # Left eye
-    glVertex2f(5, 5)   # Right eye
-    glEnd()
-
-    # Pupils
-    glColor3f(0.0, 0.0, 0.0)  # Black color for the pupils
-    glPointSize(2)
-    glBegin(GL_POINTS)
-    glVertex2f(-5, 5)  # Left pupil
-    glVertex2f(5, 5)   # Right pupil
-    glEnd()
-
-    # Mouth
-    glColor3f(1.0, 0.5, 0.0)  # Orange color for the mouth
-    glPointSize(1.5)
-    glBegin(GL_POINTS)
-    for i in range(-4, 5):  # Small curve for the smile
-        glVertex2f(i, -5 + 0.1 * i ** 2)
+    # Belt (horizontal line)
+    glColor3f(0.5, 0.2, 0.0)  # Brown color for the belt
+    glLineWidth(2)
+    glBegin(GL_LINES)
+    glVertex2f(-8, -2)
+    glVertex2f(8, -2)
     glEnd()
 
     # Arms
-    glColor3f(0.5, 0.8, 1.0)  # Same as body color
-    glPointSize(2)
-    glBegin(GL_POINTS)
-    # Left ar
-    for i in range(5):
-        glVertex2f(-14 - i, -2 + i)
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for arms
+    arm_length = 10
+    glBegin(GL_LINES)
+    # Left arm
+    glVertex2f(-8, 10)
+    glVertex2f(-8 + arm_length * math.cos(angle), 10 + arm_length * math.sin(angle))
+    # Right arm
+    glVertex2f(8, 10)
+    glVertex2f(8 + arm_length * math.cos(angle), 10 + arm_length * math.sin(angle))
     glEnd()
 
-    # Gun
-    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the gun
-    glBegin(GL_POINTS)
+    # Guns
+    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the guns
+    gun_length = 20
+    gun_thickness = 2
+    glBegin(GL_QUADS)
+    # Left gun
+    left_arm_x = -8 + arm_length * math.cos(angle)
+    left_arm_y = 10 + arm_length * math.sin(angle)
+    glVertex2f(left_arm_x, left_arm_y)
+    glVertex2f(left_arm_x + gun_length * math.cos(angle), left_arm_y + gun_length * math.sin(angle))
+    glVertex2f(left_arm_x + gun_length * math.cos(angle) - gun_thickness * math.sin(angle),
+               left_arm_y + gun_length * math.sin(angle) + gun_thickness * math.cos(angle))
+    glVertex2f(left_arm_x - gun_thickness * math.sin(angle), left_arm_y + gun_thickness * math.cos(angle))
 
-    # Main body of the gun
-    for x in range(4, 14):  # Width of the gun body
-        for y in range(-3, 3):
-            glVertex2f(10 + x, y)
-    # Gun barrel
-    for x in range(14, 20):  # Extended barrel
-        for y in range(-1, 2):
-            glVertex2f(10 + x, y)
-    glEnd()
-
-    # Right arm (holding the gun)
-    glColor3f(0.5, 0.8, 1.0)  # Same as body color
-    glBegin(GL_POINTS)
-    for i in range(6):
-        glVertex2f(12 + i, -2 - i)
+    # Right gun
+    right_arm_x = 8 + arm_length * math.cos(angle)
+    right_arm_y = 10 + arm_length * math.sin(angle)
+    glVertex2f(right_arm_x, right_arm_y)
+    glVertex2f(right_arm_x + gun_length * math.cos(angle), right_arm_y + gun_length * math.sin(angle))
+    glVertex2f(right_arm_x + gun_length * math.cos(angle) - gun_thickness * math.sin(angle),
+               right_arm_y + gun_length * math.sin(angle) + gun_thickness * math.cos(angle))
+    glVertex2f(right_arm_x - gun_thickness * math.sin(angle), right_arm_y + gun_thickness * math.cos(angle))
     glEnd()
 
     # Legs
-    glColor3f(0.3, 0.6, 1.0)  # Slightly darker blue for the legs
-    glBegin(GL_POINTS)
+    glColor3f(0.0, 0.0, 0.0)  # Black color for legs
+    glBegin(GL_LINES)
     # Left leg
-    for i in range(5):
-        glVertex2f(-5, -15 - i)
+    glVertex2f(-4, -10)
+    glVertex2f(-6, -20)
     # Right leg
-    for i in range(5):
-        glVertex2f(5, -15 - i)
+    glVertex2f(4, -10)
+    glVertex2f(6, -20)
     glEnd()
+
 
 def iterate():
     glViewport(0, 0, width, height)
@@ -257,7 +303,7 @@ def spawn_alien():
 
 
 def showScreen():
-    global character_x, character_y, mouse_x, mouse_y,frame_count
+    global character_x, character_y, mouse_x, mouse_y, frame_count
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -265,6 +311,7 @@ def showScreen():
 
     # Update the character's position
     update_character_position()
+
     # Spawn aliens periodically
     frame_count += 1
     if frame_count >= alien_spawn_interval:
@@ -273,6 +320,9 @@ def showScreen():
 
     # Update alien positions
     update_aliens()
+
+    # Update bullet positions
+    update_bullets()
 
     # Calculate the rotation angle
     angle = calculate_angle(character_x, character_y, mouse_x, mouse_y)
@@ -283,9 +333,14 @@ def showScreen():
     glRotatef(angle - 90, 0, 0, 1)  # Rotate to face the cursor (subtract 90 to align with triangle tip)
     draw_character()
     glPopMatrix()
+
+    # Draw all bullets
+    draw_bullets()
+
     # Draw all aliens
     for alien in aliens:
         alien.draw()
+
     glutSwapBuffers()
 
 def key_down(key, x, y):
@@ -316,5 +371,5 @@ glutIdleFunc(showScreen)  # Continuously update the screen
 glutKeyboardFunc(key_down)  # Set key press callback
 glutKeyboardUpFunc(key_up)  # Set key release callback
 glutPassiveMotionFunc(mouse_motion)  # Track mouse movement
-
+glutMouseFunc(mouse_click)
 glutMainLoop()
