@@ -508,7 +508,7 @@ def draw_character():
     glEnd()
 
 def spawn_alien(character_x, character_y, screen_width, screen_height):
-    speed = 0.05  # Alien's movement speed
+    speed = 0.25  # Alien's movement speed
     aliens.append(Alien(screen_width, screen_height, speed, character_x, character_y))  # Pass the character's position to the alien
 
 
