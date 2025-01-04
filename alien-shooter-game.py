@@ -23,7 +23,7 @@ keys = {b'w': False, b'a': False, b's': False, b'd': False}
 aliens = []
 bullets = []
 frame_count = 0
-stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]  # Star positions
+stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]
 boss_alien = None
 boss_spawned = False
 boss_defeated = False
@@ -177,7 +177,6 @@ class BossAlien:
         self.projectiles.append({'x': self.x, 'y': self.y - self.size, 'speed': -5})
 
     def throw_projectile_towards(self, target_x, target_y):
-        """Shoot a projectile towards the given target position."""
         dx = target_x - self.x
         dy = target_y - self.y
         distance = math.sqrt(dx ** 2 + dy ** 2)
@@ -189,7 +188,6 @@ class BossAlien:
         self.projectiles.append({'x': self.x, 'y': self.y, 'vx': velocity_x, 'vy': velocity_y})
 
     def update_projectiles(self):
-        """Update the position of projectiles."""
         for projectile in self.projectiles[:]:
             projectile['x'] += projectile['vx']
             projectile['y'] += projectile['vy']
@@ -198,7 +196,6 @@ class BossAlien:
                 self.projectiles.remove(projectile)
 
     def update(self, target_x, target_y):
-        """Update the boss position and decide whether to shoot."""
         self.move(WIDTH)
         self.update_projectiles()
         # Throw a projectile every 120 frames
@@ -301,12 +298,6 @@ class BossAlien:
 
 
     def is_hit(self, bullet):
-            """
-            Check if the boss is hit by a bullet.
-            
-            The boss has a circular hitbox for its body. 
-            For more precise collision detection, adjust for arms or spikes if needed.
-            """
             # Distance from bullet to boss center
             distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
             
@@ -342,14 +333,13 @@ def spawn_boss():
 def check_boss_collision(bullets):
     global boss_spawned, boss_alien, boss_defeated
     if boss_spawned:
-        for bullet in bullets[:]:  # Iterate over a copy to avoid modification issues
+        for bullet in bullets[:]:
             if boss_alien.is_hit(bullet):
-                print("Boss hit!")
                 boss_alien.health -= 1
-                bullets.remove(bullet)  # Remove bullet after collision
+                bullets.remove(bullet)
                 if boss_alien.health <= 0:
                     boss_defeated = True
-                    boss_spawned = False  # Remove boss after it's defeated
+                    boss_spawned = False
 
 # Helper Functions
 
@@ -373,7 +363,6 @@ def draw_bullets():
         bullet.draw()
 
 def draw_background():
-    """Draw the space-themed background."""
     # Background color
     glColor3f(0.0, 0.0, 0.2)  # Dark blue for deep space
     glBegin(GL_QUADS)
@@ -535,7 +524,6 @@ def check_collision_with_player(alien):
     return distance < 20
 
 def check_boss_projectile_collisions():
-    """Check for collisions between boss projectiles and the player."""
     global player_health
     for projectile in boss_alien.projectiles[:]:
         if abs(projectile['x'] - character_x) < 10 and abs(projectile['y'] - character_y) < 10:  # Adjust hitbox
@@ -603,7 +591,7 @@ def show_screen():
         return
     elif boss_defeated:
         glColor(0, 1, 0)
-        draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"Game Over! Score: {SCORE}")
+        draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"You WIN! Score: {SCORE}")
         glFlush()
         return
     glLoadIdentity()
