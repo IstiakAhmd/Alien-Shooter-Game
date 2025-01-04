@@ -599,6 +599,8 @@ def show_screen():
     if player_health <=0:
         glColor(1,0,0)
         draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"Game Over! Score: {SCORE}")
+        glFlush()
+        return
     elif boss_defeated:
         glColor(0, 1, 0)
         draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"Game Over! Score: {SCORE}")
