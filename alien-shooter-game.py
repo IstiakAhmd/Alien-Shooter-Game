@@ -7,9 +7,9 @@ import random
 # Constants
 WIDTH = 800
 HEIGHT = 600
-STEP = 0.26
+STEP = 0.5
 ALIEN_SPAWN_INTERVAL = 120
-BULLET_SPEED = 2
+BULLET_SPEED = 3
 PLAYER_HEALTH = 3
 
 # Globals
@@ -86,7 +86,7 @@ class Alien:
     def is_hit(self, bullet):
         # Check if the alien is hit by a bullet
         distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
-        return distance < 10
+        return distance < 15
 
     def draw(self):
         glColor3f(1.6, 0.0, 1.0)
