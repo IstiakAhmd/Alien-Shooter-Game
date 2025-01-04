@@ -119,13 +119,65 @@ def update_aliens():
 
     # Update the list of aliens
     aliens = updated_aliens
+
 def draw_character():
-    """Draw the character as a rotated triangle."""
-    glColor3f(0.0, 1.0, 0.0)  # Green color for the character
-    glBegin(GL_TRIANGLES)
-    glVertex2f(0, 10)  # Tip of the triangle
-    glVertex2f(-10, -10)
-    glVertex2f(10, -10)
+    """Draws the hero of this game"""
+    # Head (circle)
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for the head
+    glPointSize(2)  # Smaller size for points
+    glBegin(GL_POINTS)
+    for i in range(360):
+        theta = math.radians(i)
+        dx = 5 * math.cos(theta)  # Radius for the head
+        dy = 5 * math.sin(theta)
+        glVertex2f(dx, 15 + dy)  # Positioned above the body
+    glEnd()
+
+    # Body (rectangle-like using points)
+    glColor3f(0.0, 0.0, 1.4)  # Blue color for the body
+    glBegin(GL_POINTS)
+    for x in range(-8, 9):  # Width of the rectangle
+        for y in range(-10, 11):  # Height of the rectangle
+            glVertex2f(x, y)
+    glEnd()
+
+    # Belt (horizontal line using points)
+    glColor3f(0.5, 0.2, 0.0)  # Brown color for the belt
+    glBegin(GL_POINTS)
+    for x in range(-8, 9):  # Width of the belt
+        glVertex2f(x, -2)  # Horizontal line for the belt
+    glEnd()
+
+    # Arms
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for arms
+    glBegin(GL_POINTS)
+
+    # Left arm
+    for i in range(5):
+        glVertex2f(-8 - i, 10 - i)
+    # Right arm
+    for i in range(5):
+        glVertex2f(8 + i, 10 - i)
+    glEnd()
+
+    # Legs
+    glColor3f(0.0, 0.0, 0.0)  # Black color for legs
+    glBegin(GL_POINTS)
+    # Left leg
+    for i in range(10):
+        glVertex2f(-4, -10 - i)
+    # Right leg
+    for i in range(10):
+        glVertex2f(4, -10 - i)
+    glEnd()
+
+    # Cape of the hero
+    glColor3f(1.0, 0.0, 0.0)  # color of the cape
+    glBegin(GL_POINTS)
+    for x in range(-7, 8):  # Width of the cape
+        for y in range(-5, 11):  # Height of the cape
+            if abs(x) <= 7 - y:  # Define the triangular shape
+                glVertex2f(x, y)
     glEnd()
 
 
