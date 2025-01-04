@@ -543,7 +543,7 @@ def show_screen():
     glPopMatrix()
     draw_bullets()
     for alien in aliens:
-        alien.draw()
+        alien.draw(character_x, character_y)
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
