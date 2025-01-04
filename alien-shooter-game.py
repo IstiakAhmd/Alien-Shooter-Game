@@ -201,7 +201,6 @@ def update_aliens():
             player_health -= 1  # Reduce player's health
             if player_health <= 0:
                 print("Game Over!")  # Replace with a proper game-over screen
-                quit()  # Exit the game loop
         else:
             # Keep aliens that are still alive and not dodged
             updated_aliens.append(alien)
@@ -209,7 +208,6 @@ def update_aliens():
     aliens = updated_aliens
 
 def update_bullets():
-    """Update the positions of bullets, remove off-screen ones, and handle collisions."""
     global bullets, aliens
     updated_bullets = []
     for bullet in bullets:
@@ -235,7 +233,6 @@ def update_bullets():
     bullets = updated_bullets
 
 def draw_character():
-    """Draws the hero with a polished design, featuring guns, arms, legs, and no cape."""
     global mouse_x, mouse_y, character_x, character_y
 
     # Calculate the angle between the character and the mouse
