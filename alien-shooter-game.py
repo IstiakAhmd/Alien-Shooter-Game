@@ -67,16 +67,6 @@ def spawn_bullets():
     bullets.append(Bullet(left_gun_x, left_gun_y, angle))
     bullets.append(Bullet(right_gun_x, right_gun_y, angle))
 
-def update_bullets():
-    """Update the positions of bullets and remove those that go off-screen."""
-    global bullets
-    updated_bullets = []
-    for bullet in bullets:
-        bullet.move()
-        # Keep bullets that are still on the screen
-        if 0 <= bullet.x <= width and 0 <= bullet.y <= height:
-            updated_bullets.append(bullet)
-    bullets = updated_bullets
 
 def draw_bullets():
     """Draw all bullets."""
@@ -91,11 +81,12 @@ def mouse_click(button, state, x, y):
 
 class Alien:
     """Class to represent an alien entity."""
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y, speed, health=3):
         self.x = x
         self.y = y
         self.speed = speed
         self.is_dodged = False  # Flag to check if the alien is dodged
+        self.health = health  # Alien's health
 
     def move(self):
         """Move the alien."""
@@ -107,6 +98,11 @@ class Alien:
         else:
             # Move straight downward when dodged
             self.y -= self.speed
+
+    def is_hit(self, bullet):
+        """Check if the alien is hit by a bullet."""
+        distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
+        return distance < 10  # Collision threshold
 
     def draw(self):
         """Draws the body of the alien with vertically holding knife"""
@@ -163,6 +159,26 @@ class Alien:
 
         glEnd()
 
+def check_collisions():
+    """Check for collisions between bullets and aliens."""
+    global bullets, aliens
+    updated_bullets = []
+    for bullet in bullets:
+        hit = False
+        for alien in aliens:
+            # Calculate the distance between the bullet and the alien
+            distance = math.sqrt((bullet.x - alien.x) ** 2 + (bullet.y - alien.y) ** 2)
+            if distance < 10:  # Collision threshold (alien radius ~10)
+                alien.hp -= 1  # Reduce alien HP
+                hit = True
+                break  # Stop checking other aliens
+        if not hit:
+            updated_bullets.append(bullet)  # Keep bullets that didn't hit
+    bullets = updated_bullets
+
+    # Remove aliens with HP <= 0
+    aliens = [alien for alien in aliens if alien.health > 0]
+
 def update_aliens():
     """Update positions of all aliens and remove those that are dodged or off-screen."""
     global aliens
@@ -181,6 +197,32 @@ def update_aliens():
 
     # Update the list of aliens
     aliens = updated_aliens
+
+def update_bullets():
+    """Update the positions of bullets, remove off-screen ones, and handle collisions."""
+    global bullets, aliens
+    updated_bullets = []
+    for bullet in bullets:
+        bullet.move()
+
+        # Check if the bullet collides with any alien
+        hit_alien = None
+        for alien in aliens:
+            if alien.is_hit(bullet):
+                hit_alien = alien
+                break
+
+        if hit_alien:
+            # Reduce the alien's health
+            hit_alien.health -= 1
+            if hit_alien.health <= 0:
+                aliens.remove(hit_alien)  # Remove the alien if health is zero
+        else:
+            # Keep bullets that are still on the screen and didn't hit an alien
+            if 0 <= bullet.x <= width and 0 <= bullet.y <= height:
+                updated_bullets.append(bullet)
+
+    bullets = updated_bullets
 
 def draw_character():
     """Draws the hero with a polished design, featuring guns, arms, legs, and no cape."""
@@ -230,7 +272,7 @@ def draw_character():
 
     # Guns
     glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the guns
-    gun_length = 20
+    gun_length = 10
     gun_thickness = 2
     glBegin(GL_QUADS)
     # Left gun
@@ -303,13 +345,13 @@ def spawn_alien():
 
 
 def showScreen():
-    global character_x, character_y, mouse_x, mouse_y, frame_count
+    global frame_count
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     iterate()
 
-    # Update the character's position
+    # Update character position
     update_character_position()
 
     # Spawn aliens periodically
@@ -324,13 +366,12 @@ def showScreen():
     # Update bullet positions
     update_bullets()
 
-    # Calculate the rotation angle
-    angle = calculate_angle(character_x, character_y, mouse_x, mouse_y)
+    # Check collisions
+    check_collisions()
 
-    # Draw the character at the updated position, rotated to face the cursor
+    # Draw the character
     glPushMatrix()
-    glTranslatef(character_x, character_y, 0)  # Move to character position
-    glRotatef(angle - 90, 0, 0, 1)  # Rotate to face the cursor (subtract 90 to align with triangle tip)
+    glTranslatef(character_x, character_y, 0)
     draw_character()
     glPopMatrix()
 
