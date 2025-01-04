@@ -27,6 +27,8 @@ aliens = []
 # Alien appearance interval (frames)
 alien_spawn_interval = 120  # Adjust for difficulty
 frame_count = 0
+# List to store bullets
+bullets = []
 
 class Alien:
     """Class to represent an alien entity."""
@@ -120,6 +122,27 @@ def update_aliens():
 
     # Update the list of aliens
     aliens = updated_aliens
+
+class Bullet:
+    """Class to represent a bullet fired from the character's guns."""
+    def __init__(self, x, y, angle):
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.speed = 2  # Speed of the bullet
+
+    def move(self):
+        """Move the bullet in the direction of its angle."""
+        self.x += self.speed * math.cos(self.angle)
+        self.y += self.speed * math.sin(self.angle)
+
+    def draw(self):
+        """Draw the bullet."""
+        glColor3f(1.0, 0.0, 0.0)  # Red color for the bullet
+        glPointSize(5)  # Bullet size
+        glBegin(GL_POINTS)
+        glVertex2f(self.x, self.y)
+        glEnd()
 
 def draw_character():
     """Draws the hero of this game with guns pointing at the cursor and different colors for arms and guns."""
@@ -221,6 +244,44 @@ def iterate():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
+def spawn_bullets():
+    """Spawn bullets from both guns towards the mouse click position."""
+    global mouse_x, mouse_y, character_x, character_y
+
+    # Calculate the angle to the target
+    angle = math.atan2(mouse_y - character_y, mouse_x - character_x)
+
+    # Spawn two bullets, one from each gun
+    arm_length = 10  # Length of the arm
+    left_gun_x = character_x - 8 + arm_length * math.cos(angle)
+    left_gun_y = character_y + 10 + arm_length * math.sin(angle)
+    right_gun_x = character_x + 8 + arm_length * math.cos(angle)
+    right_gun_y = character_y + 10 + arm_length * math.sin(angle)
+
+    bullets.append(Bullet(left_gun_x, left_gun_y, angle))
+    bullets.append(Bullet(right_gun_x, right_gun_y, angle))
+
+def update_bullets():
+    """Update the positions of bullets and remove those that go off-screen."""
+    global bullets
+    updated_bullets = []
+    for bullet in bullets:
+        bullet.move()
+        # Keep bullets that are still on the screen
+        if 0 <= bullet.x <= width and 0 <= bullet.y <= height:
+            updated_bullets.append(bullet)
+    bullets = updated_bullets
+
+def draw_bullets():
+    """Draw all bullets."""
+    for bullet in bullets:
+        bullet.draw()
+
+def mouse_click(button, state, x, y):
+    """Handle mouse click to fire bullets."""
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        spawn_bullets()
+
 def update_character_position():
     """Update the character's position based on key states."""
     global character_x, character_y
@@ -252,7 +313,7 @@ def spawn_alien():
 
 
 def showScreen():
-    global character_x, character_y, mouse_x, mouse_y,frame_count
+    global character_x, character_y, mouse_x, mouse_y, frame_count
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -260,6 +321,7 @@ def showScreen():
 
     # Update the character's position
     update_character_position()
+
     # Spawn aliens periodically
     frame_count += 1
     if frame_count >= alien_spawn_interval:
@@ -268,6 +330,9 @@ def showScreen():
 
     # Update alien positions
     update_aliens()
+
+    # Update bullet positions
+    update_bullets()
 
     # Calculate the rotation angle
     angle = calculate_angle(character_x, character_y, mouse_x, mouse_y)
@@ -278,9 +343,14 @@ def showScreen():
     glRotatef(angle - 90, 0, 0, 1)  # Rotate to face the cursor (subtract 90 to align with triangle tip)
     draw_character()
     glPopMatrix()
+
+    # Draw all bullets
+    draw_bullets()
+
     # Draw all aliens
     for alien in aliens:
         alien.draw()
+
     glutSwapBuffers()
 
 def key_down(key, x, y):
@@ -311,5 +381,5 @@ glutIdleFunc(showScreen)  # Continuously update the screen
 glutKeyboardFunc(key_down)  # Set key press callback
 glutKeyboardUpFunc(key_up)  # Set key release callback
 glutPassiveMotionFunc(mouse_motion)  # Track mouse movement
-
+glutMouseFunc(mouse_click)  # Track mouse clicks
 glutMainLoop()
