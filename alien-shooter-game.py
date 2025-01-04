@@ -13,7 +13,7 @@ character_x = width // 2
 character_y = height // 2
 
 # Movement step size
-step = .26
+step = .5
 
 # Mouse position
 mouse_x = width // 2
@@ -122,7 +122,12 @@ def update_aliens():
     aliens = updated_aliens
 
 def draw_character():
-    """Draws the hero of this game"""
+    """Draws the hero of this game with guns pointing at the cursor and different colors for arms and guns."""
+    global mouse_x, mouse_y, character_x, character_y
+
+    # Calculate the angle between the character and the mouse
+    angle = math.atan2(mouse_y - character_y, mouse_x - character_x)
+
     # Head (circle)
     glColor3f(1.0, 0.8, 0.6)  # Skin tone color for the head
     glPointSize(2)  # Smaller size for points
@@ -151,14 +156,40 @@ def draw_character():
 
     # Arms
     glColor3f(1.0, 0.8, 0.6)  # Skin tone color for arms
+    arm_length = 5  # Length of the arm
     glBegin(GL_POINTS)
 
     # Left arm
-    for i in range(5):
-        glVertex2f(-8 - i, 10 - i)
+    for i in range(arm_length):
+        glVertex2f(-8 + i * math.cos(angle), 10 + i * math.sin(angle))
+
     # Right arm
-    for i in range(5):
-        glVertex2f(8 + i, 10 - i)
+    for i in range(arm_length):
+        glVertex2f(8 + i * math.cos(angle), 10 + i * math.sin(angle))
+    glEnd()
+
+    # Guns
+    glColor3f(0.5, 0.5, 0.5)  # Gray color for the guns
+    gun_length = 10  # Length of the gun
+    gun_thickness = 2  # Thickness of the gun
+    glBegin(GL_POINTS)
+
+    # Left gun
+    left_arm_x = -8 + arm_length * math.cos(angle)
+    left_arm_y = 10 + arm_length * math.sin(angle)
+    for i in range(gun_length):
+        for j in range(-gun_thickness, gun_thickness + 1):
+            glVertex2f(left_arm_x + i * math.cos(angle) - j * math.sin(angle),
+                       left_arm_y + i * math.sin(angle) + j * math.cos(angle))
+
+    # Right gun
+    right_arm_x = 8 + arm_length * math.cos(angle)
+    right_arm_y = 10 + arm_length * math.sin(angle)
+    for i in range(gun_length):
+        for j in range(-gun_thickness, gun_thickness + 1):
+            glVertex2f(right_arm_x + i * math.cos(angle) - j * math.sin(angle),
+                       right_arm_y + i * math.sin(angle) + j * math.cos(angle))
+
     glEnd()
 
     # Legs
@@ -173,7 +204,7 @@ def draw_character():
     glEnd()
 
     # Cape of the hero
-    glColor3f(1.0, 0.0, 0.0)  # color of the cape
+    glColor3f(1.0, 0.0, 0.0)  # Color of the cape
     glBegin(GL_POINTS)
     for x in range(-7, 8):  # Width of the cape
         for y in range(-5, 11):  # Height of the cape
