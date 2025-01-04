@@ -7,7 +7,7 @@ import random
 # Constants
 WIDTH = 800
 HEIGHT = 600
-STEP = 0.5
+STEP = 1
 ALIEN_SPAWN_INTERVAL = 120
 BULLET_SPEED = 2
 PLAYER_HEALTH = 3
@@ -26,7 +26,8 @@ frame_count = 0
 stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]  # Star positions
 boss_alien = None
 boss_spawned = False
-
+game_over_state = False
+game_over_message = ""
 
 # Classes
 class Bullet:
@@ -46,9 +47,6 @@ class Bullet:
         glBegin(GL_POINTS)
         glVertex2f(self.x, self.y)
         glEnd()
-import math
-import random
-import random
 
 class Alien:
     def __init__(self, screen_width, screen_height, speed, character_x, character_y, health=3):
@@ -541,7 +539,6 @@ def check_boss_projectile_collisions():
             player_health -= 1
             if player_health <= 0:
                 print("Game Over!")  # Handle game over
-
 
 def update_aliens():
     global player_health, aliens
