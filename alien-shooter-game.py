@@ -7,9 +7,9 @@ import random
 # Constants
 WIDTH = 800
 HEIGHT = 600
-STEP = 0.5
+STEP = 0.26
 ALIEN_SPAWN_INTERVAL = 120
-BULLET_SPEED = 3
+BULLET_SPEED = 2
 PLAYER_HEALTH = 3
 
 # Globals
@@ -46,9 +46,10 @@ class Bullet:
         glEnd()
 import math
 import random
+import random
 
 class Alien:
-    def __init__(self, screen_width, screen_height, speed, health=3):
+    def __init__(self, screen_width, screen_height, speed, character_x, character_y, health=3):
         # Determine spawn side: 0 = top, 1 = bottom, 2 = left, 3 = right
         self.spawn_side = random.choice([0, 1, 2, 3])
         self.speed = speed
@@ -69,9 +70,30 @@ class Alien:
             self.x = screen_width
             self.y = random.uniform(0, screen_height)
 
-        # Target a random point near the center or other areas
-        self.target_x = random.uniform(screen_width * 0.3, screen_width * 0.7)
-        self.target_y = random.uniform(screen_height * 0.3, screen_height * 0.7)
+        # Set the target position to the character's position (this will make the alien follow the character)
+        self.target_x = character_x
+        self.target_y = character_y
+
+    def update_position(self):
+        # Move the alien towards the character's position
+        # Calculate the direction to move towards
+        dx = self.target_x - self.x
+        dy = self.target_y - self.y
+        distance = (dx**2 + dy**2)**0.5  # Euclidean distance
+
+        # Normalize direction to make the alien move at constant speed
+        if distance > 0:
+            dx /= distance
+            dy /= distance
+
+        # Move the alien towards the character
+        self.x += dx * self.speed
+        self.y += dy * self.speed
+
+    def update_target_position(self, character_x, character_y):
+        # Continuously update the target to follow the character's new position
+        self.target_x = character_x
+        self.target_y = character_y
 
     def move(self):
         if not self.is_dodged:
@@ -86,9 +108,9 @@ class Alien:
     def is_hit(self, bullet):
         # Check if the alien is hit by a bullet
         distance = math.sqrt((self.x - bullet.x) ** 2 + (self.y - bullet.y) ** 2)
-        return distance < 15
-
-    def draw(self):
+        return distance < 10
+    def draw(self, character_x, character_y):
+        # Draw the alien's main body
         glColor3f(1.6, 0.0, 1.0)
         glPointSize(2)
         glBegin(GL_POINTS)
@@ -99,6 +121,10 @@ class Alien:
             glVertex2f(self.x + dx, self.y + dy)
         glEnd()
 
+        # Draw lines pointing towards the character
+
+
+        # Additional alien features
         glColor3f(1.0, 1.0, 0.0)
         glPointSize(2)
         glBegin(GL_POINTS)
@@ -126,6 +152,7 @@ class Alien:
         for i in range(8):
             glVertex2f(self.x + 13, self.y - 5 - i)
         glEnd()
+
 #Boss alien
 class BossAlien:
     def __init__(self, x, y, size=50, health=20):
@@ -178,30 +205,22 @@ class BossAlien:
             glVertex2f(self.x + dx, self.y + dy)
         glEnd()
 
-        # Eyes: Positioned like umbrella handle holders outside the hole
+        # Eyes: Red Circles
         glColor3f(1.0, 0.0, 0.0)  # Bright Red
-        # Left Eye
         glBegin(GL_POLYGON)
         for angle in range(360):
             theta = math.radians(angle)
             dx = self.size * 0.1 * math.cos(theta)
             dy = self.size * 0.1 * math.sin(theta)
-            glVertex2f(
-                self.x - self.size * 0.6 + dx,  # Position left of the body
-                self.y + self.size * 0.7 + dy  # Above the outer edge
-            )
+            glVertex2f(self.x - self.size * 0.3 + dx, self.y + self.size * 0.4 + dy)  # Left Eye
         glEnd()
 
-        # Right Eye
         glBegin(GL_POLYGON)
         for angle in range(360):
             theta = math.radians(angle)
             dx = self.size * 0.1 * math.cos(theta)
             dy = self.size * 0.1 * math.sin(theta)
-            glVertex2f(
-                self.x + self.size * 0.6 + dx,  # Position right of the body
-                self.y + self.size * 0.7 + dy  # Above the outer edge
-            )
+            glVertex2f(self.x + self.size * 0.3 + dx, self.y + self.size * 0.4 + dy)  # Right Eye
         glEnd()
 
         # Health Bar
@@ -371,11 +390,10 @@ def draw_character():
     glVertex2f(6, -20)
     glEnd()
 
-def spawn_alien():
-    x = random.randint(0, WIDTH)
-    y = HEIGHT
-    speed = 0.05
-    aliens.append(Alien(x, y, speed))
+def spawn_alien(character_x, character_y, screen_width, screen_height):
+    speed = 0.05  # Alien's movement speed
+    aliens.append(Alien(screen_width, screen_height, speed, character_x, character_y))  # Pass the character's position to the alien
+
 
 
 def check_collisions():
@@ -448,14 +466,14 @@ def iterate():
 
 # GLUT Callbacks
 def show_screen():
-    global frame_count
+    global frame_count,character_x, character_y, WIDTH,HEIGHT
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     iterate()
     update_character_position()
     frame_count += 1
     if frame_count >= ALIEN_SPAWN_INTERVAL:
-        spawn_alien()
+        spawn_alien(character_x, character_y,WIDTH,HEIGHT)
         frame_count = 0
     update_aliens()
     update_bullets()
@@ -466,7 +484,8 @@ def show_screen():
     glPopMatrix()
     draw_bullets()
     for alien in aliens:
-        alien.draw()
+        alien.draw(character_x, character_y)
+
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
@@ -474,7 +493,8 @@ def show_screen():
     # Draw aliens
     for alien in aliens:
         alien.move()
-        alien.draw()
+        alien.draw(character_x, character_y)
+
         global running
     # Move and draw bullets
     for bullet in bullets:
