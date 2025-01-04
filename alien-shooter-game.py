@@ -21,14 +21,12 @@ mouse_y = height // 2
 
 # Key state dictionary
 keys = {b'w': False, b'a': False, b's': False, b'd': False}
-
 # List to store aliens
 aliens = []
 
 # Alien appearance interval (frames)
 alien_spawn_interval = 120  # Adjust for difficulty
 frame_count = 0
-
 
 class Alien:
     """Class to represent an alien entity."""
@@ -41,7 +39,6 @@ class Alien:
     def move(self):
         """Move the alien."""
         if not self.is_dodged:
-
             # Move towards the character
             angle = math.atan2(character_y - self.y, character_x - self.x)
             self.x += self.speed * math.cos(angle)
@@ -55,26 +52,28 @@ class Alien:
         glColor3f(1.6, 0.0, 1.0)  # pinkish color for the alien body
         glPointSize(2)  # smaller size for the bodies
         glBegin(GL_POINTS)
-       # Main body (smaller circle-like using points)
+
+        # Main body (smaller circle-like using points)
         for i in range(360):
             theta = math.radians(i)
             dx = 10 * math.cos(theta)  # small circle radius to make the body smaller
             dy = 10 * math.sin(theta)
             glVertex2f(self.x + dx, self.y + dy)
+
         glEnd()
 
-        # making antennae
+        # making antennae using points
         glColor3f(1.0, 1.0, 0.0)  # Yellow color
         glPointSize(2)
         glBegin(GL_POINTS)
         for i in range(8):  #  antennae
-            # Left
+            # Left antenna
             glVertex2f(self.x - 3 - i, self.y + 10 + i)
-            # Right
+            # Right antenna
             glVertex2f(self.x + 3 + i, self.y + 10 + i)
         glEnd()
 
-        # those eyes
+        # Add eyes using points
         glColor3f(0.0, 1.0, 0.0)  #  color for eyes
         glPointSize(3.5)  #  eyes
         glBegin(GL_POINTS)
@@ -123,100 +122,65 @@ def update_aliens():
     aliens = updated_aliens
 
 def draw_character():
-    """Draws a cute little monster wearing a cap and holding a big gun."""
-    # Body 
-    glColor3f(0.5, 0.8, 1.0)  # Light blue color for the body
-    glPointSize(2)
+    """Draws the hero of this game"""
+    # Head (circle)
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for the head
+    glPointSize(2)  # Smaller size for points
     glBegin(GL_POINTS)
     for i in range(360):
         theta = math.radians(i)
-        dx = 12 * math.cos(theta)  # Radius of the circle
-        dy = 14 * math.sin(theta)  # Slightly elongated vertically
-        glVertex2f(dx, dy)
+        dx = 5 * math.cos(theta)  # Radius for the head
+        dy = 5 * math.sin(theta)
+        glVertex2f(dx, 15 + dy)  # Positioned above the body
     glEnd()
 
-    # Cap
-    glColor3f(1.0, 0.0, 0.0)  # Red color for the cap
-    glPointSize(2)
+    # Body (rectangle-like using points)
+    glColor3f(0.0, 0.0, 1.4)  # Blue color for the body
     glBegin(GL_POINTS)
-    for i in range(180):  # Semi-circle for the cap
-        theta = math.radians(i)
-        dx = 12 * math.cos(theta)
-        dy = 8 * math.sin(theta) + 14  # Positioned slightly above the body
-        glVertex2f(dx, dy)
+    for x in range(-8, 9):  # Width of the rectangle
+        for y in range(-10, 11):  # Height of the rectangle
+            glVertex2f(x, y)
     glEnd()
 
-    # Cap Visor
-    glColor3f(0.6, 0.0, 0.0)  # Darker red for the visor
+    # Belt (horizontal line using points)
+    glColor3f(0.5, 0.2, 0.0)  # Brown color for the belt
     glBegin(GL_POINTS)
-    for x in range(-6, 7):  # Width of the visor
-        for y in range(0, 3):  # Height of the visor
-            glVertex2f(x, 14 + y)
+    for x in range(-8, 9):  # Width of the belt
+        glVertex2f(x, -2)  # Horizontal line for the belt
     glEnd()
 
-    # Eyes
-    glColor3f(1.0, 1.0, 1.0)  # White color for the eyes
-    glPointSize(5)
+    # Arms
+    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for arms
     glBegin(GL_POINTS)
-    glVertex2f(-5, 5)  # Left eye
-    glVertex2f(5, 5)   # Right eye
-    glEnd()
 
-    # Pupils
-    glColor3f(0.0, 0.0, 0.0)  # Black color for the pupils
-    glPointSize(2)
-    glBegin(GL_POINTS)
-    glVertex2f(-5, 5)  # Left pupil
-    glVertex2f(5, 5)   # Right pupil
-    glEnd()
-
-    # Mouth
-    glColor3f(1.0, 0.5, 0.0)  # Orange color for the mouth
-    glPointSize(1.5)
-    glBegin(GL_POINTS)
-    for i in range(-4, 5):  # Small curve for the smile
-        glVertex2f(i, -5 + 0.1 * i ** 2)
-    glEnd()
-
-    # Arms (one holding a big gun)
-    glColor3f(0.5, 0.8, 1.0)  # Same as body color
-    glPointSize(2)
-    glBegin(GL_POINTS)
-    # Left arm (free)
+    # Left arm
     for i in range(5):
-        glVertex2f(-14 - i, -2 + i)
-    glEnd()
-
-    # Gun (big rectangular gun with a barrel)
-    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the gun
-    glBegin(GL_POINTS)
-    # Main body of the gun
-    for x in range(4, 14):  # Width of the gun body
-        for y in range(-3, 3):
-            glVertex2f(10 + x, y)
-    # Gun barrel
-    for x in range(14, 20):  # Extended barrel
-        for y in range(-1, 2):
-            glVertex2f(10 + x, y)
-    glEnd()
-
-    # Right arm (holding the gun)
-    glColor3f(0.5, 0.8, 1.0)  # Same as body color
-    glBegin(GL_POINTS)
-    for i in range(6):
-        glVertex2f(12 + i, -2 - i)
+        glVertex2f(-8 - i, 10 - i)
+    # Right arm
+    for i in range(5):
+        glVertex2f(8 + i, 10 - i)
     glEnd()
 
     # Legs
-    glColor3f(0.3, 0.6, 1.0)  # Slightly darker blue for the legs
+    glColor3f(0.0, 0.0, 0.0)  # Black color for legs
     glBegin(GL_POINTS)
-    # Left
-    for i in range(5):
-        glVertex2f(-5, -15 - i)
-    # Right
-    for i in range(5):
-        glVertex2f(5, -15 - i)
+    # Left leg
+    for i in range(10):
+        glVertex2f(-4, -10 - i)
+    # Right leg
+    for i in range(10):
+        glVertex2f(4, -10 - i)
     glEnd()
+
+    # Cape of the hero
+    glColor3f(1.0, 0.0, 0.0)  # color of the cape
+    glBegin(GL_POINTS)
+    for x in range(-7, 8):  # Width of the cape
+        for y in range(-5, 11):  # Height of the cape
+            if abs(x) <= 7 - y:  # Define the triangular shape
+                glVertex2f(x, y)
+    glEnd()
+
 
 def iterate():
     glViewport(0, 0, width, height)
@@ -251,7 +215,7 @@ def spawn_alien():
     edge = "top"
     if edge == "top":
         x = random.randint(0, width)
-        y = height
+        y = height 
     speed = 0.05
     aliens.append(Alien(x, y, speed))
 
