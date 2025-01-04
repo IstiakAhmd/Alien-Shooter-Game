@@ -7,7 +7,7 @@ import random
 # Constants
 WIDTH = 800
 HEIGHT = 600
-STEP = 0.26
+STEP = 0.5
 ALIEN_SPAWN_INTERVAL = 120
 BULLET_SPEED = 2
 PLAYER_HEALTH = 3
@@ -22,6 +22,7 @@ keys = {b'w': False, b'a': False, b's': False, b'd': False}
 aliens = []
 bullets = []
 frame_count = 0
+stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]  # Star positions
 boss_alien = None
 boss_spawned = False
 
@@ -310,6 +311,61 @@ def draw_bullets():
     for bullet in bullets:
         bullet.draw()
 
+def draw_background():
+    """Draw the space-themed background."""
+    # Background color
+    glColor3f(0.0, 0.0, 0.2)  # Dark blue for deep space
+    glBegin(GL_QUADS)
+    glVertex2f(0, 0)
+    glVertex2f(WIDTH, 0)
+    glVertex2f(WIDTH, HEIGHT)
+    glVertex2f(0, HEIGHT)
+    glEnd()
+
+    # Stars
+    glColor3f(1.0, 1.0, 1.0)  # White for stars
+    glPointSize(2)
+    glBegin(GL_POINTS)
+    for star in stars:
+        glVertex2f(star[0], star[1])
+    glEnd()
+
+def draw_health_bar():
+    global player_health
+    bar_width = 200
+    bar_height = 20
+    health_ratio = player_health / PLAYER_HEALTH
+
+    # Outline of the health bar
+    glColor3f(0.0, 0.0, 0.0)  # Black for the border
+    glLineWidth(2)
+    glBegin(GL_LINE_LOOP)
+    glVertex2f(10, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30 - bar_height)
+    glVertex2f(10, HEIGHT - 30 - bar_height)
+    glEnd()
+
+    # Background of the health bar (Red)
+    glColor3f(1.0, 0.0, 0.0)
+    glBegin(GL_QUADS)
+    glVertex2f(10, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30 - bar_height)
+    glVertex2f(10, HEIGHT - 30 - bar_height)
+    glEnd()
+
+    # Foreground of the health bar (Gradient Green to Yellow)
+    for i in range(int(bar_width * health_ratio)):
+        glColor3f(0.0 + i / bar_width, 1.0 - i / bar_width, 0.0)
+        glBegin(GL_QUADS)
+        glVertex2f(10 + i, HEIGHT - 30)
+        glVertex2f(10 + i + 1, HEIGHT - 30)
+        glVertex2f(10 + i + 1, HEIGHT - 30 - bar_height)
+        glVertex2f(10 + i, HEIGHT - 30 - bar_height)
+        glEnd()
+
+
 def draw_character():
     global mouse_x, mouse_y, character_x, character_y
 
@@ -470,6 +526,9 @@ def show_screen():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     iterate()
+
+    draw_background() #render the background
+
     update_character_position()
     frame_count += 1
     if frame_count >= ALIEN_SPAWN_INTERVAL:
@@ -484,8 +543,7 @@ def show_screen():
     glPopMatrix()
     draw_bullets()
     for alien in aliens:
-        alien.draw(character_x, character_y)
-
+        alien.draw()
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
