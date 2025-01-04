@@ -122,65 +122,101 @@ def update_aliens():
     aliens = updated_aliens
 
 def draw_character():
-    """Draws the hero of this game"""
-    # Head (circle)
-    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for the head
-    glPointSize(2)  # Smaller size for points
+    """Draws a cute little monster wearing a cap and holding a big gun."""
+    # Body
+    glColor3f(0.5, 0.8, 1.0)  # Light blue color for the body
+    glPointSize(2)
     glBegin(GL_POINTS)
     for i in range(360):
         theta = math.radians(i)
-        dx = 5 * math.cos(theta)  # Radius for the head
-        dy = 5 * math.sin(theta)
-        glVertex2f(dx, 15 + dy)  # Positioned above the body
+        dx = 12 * math.cos(theta)  # Radius of the circle
+        dy = 14 * math.sin(theta)  # Slightly elongated vertically
+        glVertex2f(dx, dy)
     glEnd()
 
-    # Body (rectangle-like using points)
-    glColor3f(0.0, 0.0, 1.4)  # Blue color for the body
+    # Cap
+    glColor3f(1.0, 0.0, 0.0)  # Red color for the cap
+    glPointSize(2)
     glBegin(GL_POINTS)
-    for x in range(-8, 9):  # Width of the rectangle
-        for y in range(-10, 11):  # Height of the rectangle
-            glVertex2f(x, y)
+    for i in range(180):  # Semi-circle for the cap
+        theta = math.radians(i)
+        dx = 12 * math.cos(theta)
+        dy = 8 * math.sin(theta) + 14  # Positioned slightly above the body
+        glVertex2f(dx, dy)
     glEnd()
 
-    # Belt (horizontal line using points)
-    glColor3f(0.5, 0.2, 0.0)  # Brown color for the belt
+    # Cap Visor
+    glColor3f(0.6, 0.0, 0.0)  # Darker red for the visor
     glBegin(GL_POINTS)
-    for x in range(-8, 9):  # Width of the belt
-        glVertex2f(x, -2)  # Horizontal line for the belt
+    for x in range(-6, 7):  # Width of the visor
+        for y in range(0, 3):  # Height of the visor
+            glVertex2f(x, 14 + y)
+    glEnd()
+
+    # Eyes (big, round eyes)
+    glColor3f(1.0, 1.0, 1.0)  # White color for the eyes
+    glPointSize(5)
+    glBegin(GL_POINTS)
+    glVertex2f(-5, 5)  # Left eye
+    glVertex2f(5, 5)   # Right eye
+    glEnd()
+
+    # Pupils
+    glColor3f(0.0, 0.0, 0.0)  # Black color for the pupils
+    glPointSize(2)
+    glBegin(GL_POINTS)
+    glVertex2f(-5, 5)  # Left pupil
+    glVertex2f(5, 5)   # Right pupil
+    glEnd()
+
+    # Mouth
+    glColor3f(1.0, 0.5, 0.0)  # Orange color for the mouth
+    glPointSize(1.5)
+    glBegin(GL_POINTS)
+    for i in range(-4, 5):  # Small curve for the smile
+        glVertex2f(i, -5 + 0.1 * i ** 2)
     glEnd()
 
     # Arms
-    glColor3f(1.0, 0.8, 0.6)  # Skin tone color for arms
+    glColor3f(0.5, 0.8, 1.0)  # Same as body color
+    glPointSize(2)
+    glBegin(GL_POINTS)
+    # Left ar
+    for i in range(5):
+        glVertex2f(-14 - i, -2 + i)
+    glEnd()
+
+    # Gun
+    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the gun
     glBegin(GL_POINTS)
 
-    # Left arm
-    for i in range(5):
-        glVertex2f(-8 - i, 10 - i)
-    # Right arm
-    for i in range(5):
-        glVertex2f(8 + i, 10 - i)
+    # Main body of the gun
+    for x in range(4, 14):  # Width of the gun body
+        for y in range(-3, 3):
+            glVertex2f(10 + x, y)
+    # Gun barrel
+    for x in range(14, 20):  # Extended barrel
+        for y in range(-1, 2):
+            glVertex2f(10 + x, y)
+    glEnd()
+
+    # Right arm (holding the gun)
+    glColor3f(0.5, 0.8, 1.0)  # Same as body color
+    glBegin(GL_POINTS)
+    for i in range(6):
+        glVertex2f(12 + i, -2 - i)
     glEnd()
 
     # Legs
-    glColor3f(0.0, 0.0, 0.0)  # Black color for legs
+    glColor3f(0.3, 0.6, 1.0)  # Slightly darker blue for the legs
     glBegin(GL_POINTS)
     # Left leg
-    for i in range(10):
-        glVertex2f(-4, -10 - i)
+    for i in range(5):
+        glVertex2f(-5, -15 - i)
     # Right leg
-    for i in range(10):
-        glVertex2f(4, -10 - i)
+    for i in range(5):
+        glVertex2f(5, -15 - i)
     glEnd()
-
-    # Cape of the hero
-    glColor3f(1.0, 0.0, 0.0)  # color of the cape
-    glBegin(GL_POINTS)
-    for x in range(-7, 8):  # Width of the cape
-        for y in range(-5, 11):  # Height of the cape
-            if abs(x) <= 7 - y:  # Define the triangular shape
-                glVertex2f(x, y)
-    glEnd()
-
 
 def iterate():
     glViewport(0, 0, width, height)
