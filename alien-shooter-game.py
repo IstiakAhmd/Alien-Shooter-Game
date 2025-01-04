@@ -178,12 +178,34 @@ class BossAlien:
         # Boss shoots a projectile downward
         self.projectiles.append({'x': self.x, 'y': self.y - self.size, 'speed': -5})
 
+    def throw_projectile_towards(self, target_x, target_y):
+        """Shoot a projectile towards the given target position."""
+        dx = target_x - self.x
+        dy = target_y - self.y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        if distance == 0:  # Prevent division by zero
+            distance = 1
+        speed = 5  # Adjust projectile speed as needed
+        velocity_x = (dx / distance) * speed
+        velocity_y = (dy / distance) * speed
+        self.projectiles.append({'x': self.x, 'y': self.y, 'vx': velocity_x, 'vy': velocity_y})
+
     def update_projectiles(self):
-        # Update the position of projectiles and remove those off-screen
+        """Update the position of projectiles."""
         for projectile in self.projectiles[:]:
-            projectile['y'] += projectile['speed']
-            if projectile['y'] < 0:
+            projectile['x'] += projectile['vx']
+            projectile['y'] += projectile['vy']
+            # Remove the projectile if it goes off-screen
+            if projectile['x'] < 0 or projectile['x'] > WIDTH or projectile['y'] < 0 or projectile['y'] > HEIGHT:
                 self.projectiles.remove(projectile)
+
+    def update(self, target_x, target_y):
+        """Update the boss position and decide whether to shoot."""
+        self.move(WIDTH)
+        self.update_projectiles()
+        # Throw a projectile every 120 frames
+        if frame_count % 120 == 0:
+            self.throw_projectile_towards(target_x, target_y)
 
     def draw(self):
         # Main body
@@ -508,6 +530,16 @@ def check_collision_with_player(alien):
     distance = math.sqrt((alien.x - character_x) ** 2 + (alien.y - character_y) ** 2)
     return distance < 20
 
+def check_boss_projectile_collisions():
+    """Check for collisions between boss projectiles and the player."""
+    global player_health
+    for projectile in boss_alien.projectiles[:]:
+        if abs(projectile['x'] - character_x) < 10 and abs(projectile['y'] - character_y) < 10:  # Adjust hitbox
+            boss_alien.projectiles.remove(projectile)
+            player_health -= 1
+            if player_health <= 0:
+                print("Game Over!")  # Handle game over
+
 
 def update_aliens():
     global player_health, aliens
@@ -584,6 +616,8 @@ def show_screen():
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
+
+
     
     # Draw aliens
     for alien in aliens:
@@ -600,8 +634,9 @@ def show_screen():
     check_boss_collision(bullets)
     # Draw the boss if spawned
     if boss_spawned:
-
+        boss_alien.update(character_x, character_y)
         boss_alien.draw()
+        check_boss_projectile_collisions()
     glutSwapBuffers()
 
 def key_down(key, x, y):
