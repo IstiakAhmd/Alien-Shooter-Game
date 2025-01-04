@@ -47,14 +47,60 @@ class Alien:
             self.y -= self.speed
 
     def draw(self):
-        """Draw the alien as a red square."""
-        glColor3f(1.0, 0.0, 0.0)  # Red color for aliens
-        glBegin(GL_QUADS)
-        glVertex2f(self.x - 10, self.y - 10)
-        glVertex2f(self.x + 10, self.y - 10)
-        glVertex2f(self.x + 10, self.y + 10)
-        glVertex2f(self.x - 10, self.y + 10)
+        """Draws the body of the alien with vertically holding knife"""
+        glColor3f(1.6, 0.0, 1.0)  # pinkish color for the alien body
+        glPointSize(2)  # smaller size for the bodies
+        glBegin(GL_POINTS)
+
+        # Main body (smaller circle-like using points)
+        for i in range(360):
+            theta = math.radians(i)
+            dx = 10 * math.cos(theta)  # small circle radius to make the body smaller
+            dy = 10 * math.sin(theta)
+            glVertex2f(self.x + dx, self.y + dy)
+
         glEnd()
+
+        # making antennae using points
+        glColor3f(1.0, 1.0, 0.0)  # Yellow color
+        glPointSize(2)
+        glBegin(GL_POINTS)
+        for i in range(8):  #  antennae
+            # Left antenna
+            glVertex2f(self.x - 3 - i, self.y + 10 + i)
+            # Right antenna
+            glVertex2f(self.x + 3 + i, self.y + 10 + i)
+        glEnd()
+
+        # Add eyes using points
+        glColor3f(0.0, 1.0, 0.0)  #  color for eyes
+        glPointSize(3.5)  #  eyes
+        glBegin(GL_POINTS)
+        glVertex2f(self.x - 3, self.y + 3)  # Left eye
+        glVertex2f(self.x + 3, self.y + 3)  # Right eye
+        glEnd()
+
+        # Add arms holding vertical knives using points
+        glColor3f(1.0, 1.0, 0.0)  # Red color for knives
+        glPointSize(2)
+        glBegin(GL_POINTS)
+
+        # Left arm
+        for i in range(3):  # Short arm
+            glVertex2f(self.x - 10 - i, self.y - 3 + i)  # Arm
+        #  knife
+        for i in range(8):  # Vertical knife
+            glVertex2f(self.x - 13, self.y - 5 - i)  # Knife points (straight down)
+
+        # Right arm
+        for i in range(3):  # Short arm
+            glVertex2f(self.x + 10 + i, self.y - 3 + i)  #Arm
+        # knife
+        for i in range(8):  # Vertical knife
+            glVertex2f(self.x + 13, self.y - 5 - i)  # Knife (straight down)
+
+        glEnd()
+
 def update_aliens():
     """Update positions of all aliens and remove those that are dodged or off-screen."""
     global aliens
