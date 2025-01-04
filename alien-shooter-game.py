@@ -3,6 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
 import random
+
 # Window dimensions
 width = 800
 height = 600
@@ -12,7 +13,7 @@ character_x = width // 2
 character_y = height // 2
 
 # Movement step size
-step = .20
+step = .26
 
 # Mouse position
 mouse_x = width // 2
