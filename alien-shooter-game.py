@@ -26,8 +26,7 @@ frame_count = 0
 stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]  # Star positions
 boss_alien = None
 boss_spawned = False
-game_over_state = False
-game_over_message = ""
+boss_defeated = False
 
 # Classes
 class Bullet:
@@ -341,7 +340,7 @@ def spawn_boss():
 
 
 def check_boss_collision(bullets):
-    global boss_spawned, boss_alien
+    global boss_spawned, boss_alien, boss_defeated
     if boss_spawned:
         for bullet in bullets[:]:  # Iterate over a copy to avoid modification issues
             if boss_alien.is_hit(bullet):
@@ -349,7 +348,7 @@ def check_boss_collision(bullets):
                 boss_alien.health -= 1
                 bullets.remove(bullet)  # Remove bullet after collision
                 if boss_alien.health <= 0:
-                    print("Boss defeated!")
+                    boss_defeated = True
                     boss_spawned = False  # Remove boss after it's defeated
 
 # Helper Functions
@@ -542,8 +541,6 @@ def check_boss_projectile_collisions():
         if abs(projectile['x'] - character_x) < 10 and abs(projectile['y'] - character_y) < 10:  # Adjust hitbox
             boss_alien.projectiles.remove(projectile)
             player_health -= 1
-            if player_health <= 0:
-                print("Game Over!")  # Handle game over
 
 def update_aliens():
     global player_health, aliens
@@ -552,8 +549,6 @@ def update_aliens():
         alien.move()
         if check_collision_with_player(alien):
             player_health -= 1
-            if player_health <= 0:
-                print("Game Over!")
         else:
             updated_aliens.append(alien)
     aliens = updated_aliens
@@ -582,6 +577,11 @@ def update_character_position():
     character_x = max(10, min(WIDTH - 10, character_x))
     character_y = max(10, min(HEIGHT - 10, character_y))
 
+def draw_text(x, y, text):
+    glRasterPos2f(x, y)
+    for ch in text:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
 
 def iterate():
     glViewport(0, 0, WIDTH, HEIGHT)
@@ -594,8 +594,16 @@ def iterate():
 
 # GLUT Callbacks
 def show_screen():
-    global frame_count,character_x, character_y, WIDTH,HEIGHT
+    global frame_count,character_x, character_y, WIDTH,HEIGHT, player_health, SCORE, boss_defeated
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    if player_health <=0:
+        glColor(1,0,0)
+        draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"Game Over! Score: {SCORE}")
+    elif boss_defeated:
+        glColor(0, 1, 0)
+        draw_text(WIDTH // 2 - 100, HEIGHT // 2, f"Game Over! Score: {SCORE}")
+        glFlush()
+        return
     glLoadIdentity()
     iterate()
 
