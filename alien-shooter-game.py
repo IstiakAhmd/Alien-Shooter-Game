@@ -11,6 +11,7 @@ height = 600
 # Character position
 character_x = width // 2
 character_y = height // 2
+player_health = 3
 
 # Movement step size
 step = .26
@@ -27,8 +28,11 @@ aliens = []
 # Alien appearance interval (frames)
 alien_spawn_interval = 120  # Adjust for difficulty
 frame_count = 0
+
 # List to store bullets
 bullets = []
+
+
 class Bullet:
     """Class to represent a bullet fired from the character's guns."""
     def __init__(self, x, y, angle):
@@ -179,23 +183,29 @@ def check_collisions():
     # Remove aliens with HP <= 0
     aliens = [alien for alien in aliens if alien.health > 0]
 
+def check_collision_with_player(alien):
+    """Check if an alien touches the player."""
+    distance = math.sqrt((alien.x - character_x) ** 2 + (alien.y - character_y) ** 2)
+    return distance < 20  # Collision threshold between player and alien
+
 def update_aliens():
-    """Update positions of all aliens and remove those that are dodged or off-screen."""
-    global aliens
-    dodge_distance = 50  # Distance threshold for dodging
+    """Update the positions of aliens and handle player collision."""
+    global aliens, player_health
 
     updated_aliens = []
     for alien in aliens:
-        # Check if the alien is close enough to be dodged
-        if abs(alien.x - character_x) < dodge_distance and abs(alien.y - character_y) < dodge_distance:
-            # Alien is dodged, do not add it to the updated list
-            continue
         alien.move()
-        # Keep aliens that are still within the screen
-        if 0 <= alien.x <= width and 0 <= alien.y <= height:
+
+        # Check if the alien touches the player
+        if check_collision_with_player(alien):
+            player_health -= 1  # Reduce player's health
+            if player_health <= 0:
+                print("Game Over!")  # Replace with a proper game-over screen
+                quit()  # Exit the game loop
+        else:
+            # Keep aliens that are still alive and not dodged
             updated_aliens.append(alien)
 
-    # Update the list of aliens
     aliens = updated_aliens
 
 def update_bullets():
@@ -334,12 +344,13 @@ def update_character_position():
 def calculate_angle(x1, y1, x2, y2):
     """Calculate the angle (in degrees) between two points."""
     return math.degrees(math.atan2(y2 - y1, x2 - x1))
+
 def spawn_alien():
     """Spawn a new alien at a random edge position."""
     edge = "top"
     if edge == "top":
         x = random.randint(0, width)
-        y = height 
+        y = height
     speed = 0.05
     aliens.append(Alien(x, y, speed))
 
