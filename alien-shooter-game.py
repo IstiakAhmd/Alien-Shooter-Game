@@ -353,6 +353,11 @@ def check_boss_collision(bullets):
                     boss_spawned = False  # Remove boss after it's defeated
 
 # Helper Functions
+
+def timer(value):
+    glutPostRedisplay()
+    glutTimerFunc(16, timer, 0)
+
 def spawn_bullets():
     angle = math.atan2(mouse_y - character_y, mouse_x - character_x)
     arm_length = 10
@@ -671,4 +676,5 @@ glutKeyboardFunc(key_down)
 glutKeyboardUpFunc(key_up)
 glutPassiveMotionFunc(mouse_motion)
 glutMouseFunc(mouse_click)
+glutTimerFunc(16, timer, 0)
 glutMainLoop()
