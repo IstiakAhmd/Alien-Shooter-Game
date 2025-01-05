@@ -22,6 +22,7 @@ keys = {b'w': False, b'a': False, b's': False, b'd': False}
 aliens = []
 bullets = []
 frame_count = 0
+stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT)) for _ in range(100)]  # Star positions
 boss_alien = None
 boss_spawned = False
 
@@ -291,6 +292,25 @@ def draw_bullets():
     for bullet in bullets:
         bullet.draw()
 
+def draw_background():
+    """Draw the space-themed background."""
+    # Background color
+    glColor3f(0.0, 0.0, 0.2)  # Dark blue for deep space
+    glBegin(GL_QUADS)
+    glVertex2f(0, 0)
+    glVertex2f(WIDTH, 0)
+    glVertex2f(WIDTH, HEIGHT)
+    glVertex2f(0, HEIGHT)
+    glEnd()
+
+    # Stars
+    glColor3f(1.0, 1.0, 1.0)  # White for stars
+    glPointSize(2)
+    glBegin(GL_POINTS)
+    for star in stars:
+        glVertex2f(star[0], star[1])
+    glEnd()
+
 def draw_health_bar():
     global player_health
     bar_width = 200
@@ -488,6 +508,9 @@ def show_screen():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     iterate()
+
+    draw_background() #render the background
+
     update_character_position()
     frame_count += 1
     if frame_count >= ALIEN_SPAWN_INTERVAL:
