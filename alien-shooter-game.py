@@ -544,6 +544,7 @@ def show_screen():
     draw_bullets()
     for alien in aliens:
         alien.draw(character_x, character_y)
+        draw_health_bar()
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
