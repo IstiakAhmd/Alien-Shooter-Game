@@ -291,6 +291,42 @@ def draw_bullets():
     for bullet in bullets:
         bullet.draw()
 
+def draw_health_bar():
+    global player_health
+    bar_width = 200
+    bar_height = 20
+    health_ratio = player_health / PLAYER_HEALTH
+
+    # Outline of the health bar
+    glColor3f(0.0, 0.0, 0.0)  # Black for the border
+    glLineWidth(2)
+    glBegin(GL_LINE_LOOP)
+    glVertex2f(10, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30 - bar_height)
+    glVertex2f(10, HEIGHT - 30 - bar_height)
+    glEnd()
+
+    # Background of the health bar (Red)
+    glColor3f(1.0, 0.0, 0.0)
+    glBegin(GL_QUADS)
+    glVertex2f(10, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30)
+    glVertex2f(10 + bar_width, HEIGHT - 30 - bar_height)
+    glVertex2f(10, HEIGHT - 30 - bar_height)
+    glEnd()
+
+    # Foreground of the health bar (Gradient Green to Yellow)
+    for i in range(int(bar_width * health_ratio)):
+        glColor3f(0.0 + i / bar_width, 1.0 - i / bar_width, 0.0)
+        glBegin(GL_QUADS)
+        glVertex2f(10 + i, HEIGHT - 30)
+        glVertex2f(10 + i + 1, HEIGHT - 30)
+        glVertex2f(10 + i + 1, HEIGHT - 30 - bar_height)
+        glVertex2f(10 + i, HEIGHT - 30 - bar_height)
+        glEnd()
+
+
 def draw_character():
     global mouse_x, mouse_y, character_x, character_y
 
@@ -467,6 +503,7 @@ def show_screen():
     draw_bullets()
     for alien in aliens:
         alien.draw()
+        draw_health_bar()
     global running
     # Call spawn_boss to check if conditions are met
     spawn_boss()
