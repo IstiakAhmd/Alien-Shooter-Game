@@ -186,14 +186,50 @@ class BossAlien:
                 self.projectiles.remove(projectile)
 
     def draw(self):
-        # Body: Donut Shape (Yellow)
-        glColor3f(1.0, 1.0, 0.0)  # Yellow for the outer circle
-        glBegin(GL_POLYGON)
-        for angle in range(360):
-            theta = math.radians(angle)
-            dx = self.size * math.cos(theta)
-            dy = self.size * math.sin(theta)
+        # Main body
+        glColor3f(1.6, 0.0, 1.0)
+        glPointSize(3)
+        glBegin(GL_POINTS)
+        for i in range(360):
+            theta = math.radians(i)
+            dx = 30 * math.cos(theta)
+            dy = 30 * math.sin(theta)
             glVertex2f(self.x + dx, self.y + dy)
+        glEnd()
+
+        # Antennae
+        glColor3f(1.0, 1.0, 0.0)
+        glPointSize(2)
+        glBegin(GL_POINTS)
+        for i in range(10):
+            glVertex2f(self.x - 15 - i, self.y + 30 + i)
+            glVertex2f(self.x + 15 + i, self.y + 30 + i)
+        glEnd()
+
+        # Eyes
+        glColor3f(0.0, 1.0, 0.0)
+        glPointSize(5)
+        glBegin(GL_POINTS)
+        glVertex2f(self.x - 10, self.y + 10)
+        glVertex2f(self.x + 10, self.y + 10)
+        glEnd()
+
+        # Arms
+        glColor3f(1.0, 1.0, 0.0)
+        glPointSize(2)
+        glBegin(GL_POINTS)
+        for i in range(15):
+            glVertex2f(self.x - 40 - i, self.y - 10 + i)
+            glVertex2f(self.x + 40 + i, self.y - 10 + i)
+        glEnd()
+
+        # Legs
+        glColor3f(1.0, 0.5, 0.0)
+        glPointSize(3)
+        glBegin(GL_POINTS)
+        for i in range(10):
+            glVertex2f(self.x - 20 + i, self.y - 40 - i)
+            glVertex2f(self.x + 20 - i, self.y - 40 - i)
         glEnd()
 
         # Hole: Inner Circle (Background color to carve out the hole)
