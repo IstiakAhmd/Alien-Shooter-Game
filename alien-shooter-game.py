@@ -474,7 +474,7 @@ def draw_character():
     glEnd()
 
     # Guns
-    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the guns
+    glColor3f(1.8, 0.0, 1.0)  # Dark gray color for the guns
     gun_length = 10
     gun_thickness = 2
     glBegin(GL_QUADS)
